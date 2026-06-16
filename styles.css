@@ -372,6 +372,9 @@ input[type="datetime-local"] {
 
 .input-error { border-color: var(--red) !important; }
 
+/* Data actions */
+.data-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
 /* Weekly / By Day Summary */
 .wsum-card { padding: 16px; }
 .wsum-pre { font-family: 'SF Mono', 'Roboto Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.8; white-space: pre-wrap; word-break: break-word; color: var(--text); }

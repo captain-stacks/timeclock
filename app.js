@@ -193,6 +193,13 @@ function renderProjects() {
           </div>
         `).join('')
     }
+    <div class="section-header" style="margin-top:20px">
+      <span class="section-title">Data</span>
+    </div>
+    <div class="data-actions">
+      <button class="btn btn-ghost" onclick="exportData()">Export</button>
+      <button class="btn btn-ghost" onclick="importData()">Import</button>
+    </div>
   `
   document.getElementById('btn-add-project').addEventListener('click', () => showProjectModal())
 }
@@ -561,6 +568,44 @@ window.copyWeeklySummary = () => {
     el.classList.add('visible')
     setTimeout(() => el.classList.remove('visible'), 2000)
   })
+}
+
+// ── Import / Export ───────────────────────────────────────────────────────────
+
+window.exportData = () => {
+  const payload = JSON.stringify({ projects: DB.projects(), entries: DB.entries() }, null, 2)
+  const a = Object.assign(document.createElement('a'), {
+    href:     URL.createObjectURL(new Blob([payload], { type: 'text/plain' })),
+    download: `timeclock-${new Date().toISOString().slice(0,10)}.json`,
+  })
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
+
+window.importData = () => {
+  const input = Object.assign(document.createElement('input'), { type: 'file', accept: '.json,text/plain' })
+  input.onchange = () => {
+    const file = input.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = evt => {
+      try {
+        const data = JSON.parse(evt.target.result)
+        if (!Array.isArray(data.projects) || !Array.isArray(data.entries)) {
+          alert('Invalid file: expected { projects, entries }.')
+          return
+        }
+        if (!confirm(`Import ${data.projects.length} projects and ${data.entries.length} entries? This will replace all current data.`)) return
+        DB.saveProjects(data.projects)
+        DB.saveEntries(data.entries)
+        render()
+      } catch {
+        alert('Could not parse file.')
+      }
+    }
+    reader.readAsText(file)
+  }
+  input.click()
 }
 
 // ── Render dispatcher ─────────────────────────────────────────────────────────
