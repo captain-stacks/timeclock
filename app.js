@@ -472,7 +472,8 @@ function weeklySummaryHtml() {
 
   const n = v => parseFloat(v.toFixed(2)).toString()
 
-  let total  = 0
+  let total    = 0
+  let totalMs  = 0
   const textLines = []
 
   dayKeys.forEach(d => {
@@ -480,14 +481,16 @@ function weeklySummaryHtml() {
     Object.values(byDay[d]).forEach(p => {
       const hrs  = Math.round(p.ms / 36000) / 100
       const earn = Math.round(hrs * p.rate * 100) / 100
-      total += earn
+      total   += earn
+      totalMs += p.ms
       textLines.push(`${n(hrs)} ${hrs === 1 ? 'hour' : 'hours'} ${p.name} $${n(p.rate)}/hr = $${n(earn)}`)
     })
     textLines.push('')
   })
 
   const totalRounded = Math.round(total * 100) / 100
-  textLines.push(`total: $${n(totalRounded)}`)
+  const totalHrs     = Math.round(totalMs / 36000) / 100
+  textLines.push(`total: ${n(totalHrs)} ${totalHrs === 1 ? 'hour' : 'hours'} = $${n(totalRounded)}`)
 
   weeklySummaryText = textLines.join('\n')
   return weekNavHtml + `
