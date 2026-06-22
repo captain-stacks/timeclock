@@ -57,6 +57,7 @@ let currentView      = 'clock'
 let timerInterval    = null
 let logFilter        = 'all'
 let summaryFilter    = 'week'
+let byDayWeekOffset  = 0
 let weeklySummaryText = ''
 
 // ── Navigation ───────────────────────────────────────────────────────────────
@@ -418,10 +419,23 @@ function weeklySummaryHtml() {
   const dow        = now.getDay()
   const daysFromMon = dow === 0 ? 6 : dow - 1
   const monday     = new Date(now)
-  monday.setDate(now.getDate() - daysFromMon)
+  monday.setDate(now.getDate() - daysFromMon + byDayWeekOffset * 7)
   monday.setHours(0, 0, 0, 0)
   const nextMonday = new Date(monday)
   nextMonday.setDate(monday.getDate() + 7)
+
+  const sunday = new Date(nextMonday)
+  sunday.setDate(nextMonday.getDate() - 1)
+  const fmt = d => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  const weekLabel = `${fmt(monday)} – ${fmt(sunday)}`
+
+  const weekNavHtml = `
+    <div class="week-nav">
+      <button class="btn btn-ghost btn-sm" onclick="shiftByDayWeek(-1)">&#8249; Prev</button>
+      <span class="week-nav-label">${weekLabel}</span>
+      <button class="btn btn-ghost btn-sm" onclick="shiftByDayWeek(1)"${byDayWeekOffset >= 0 ? ' disabled' : ''}>Next &#8250;</button>
+    </div>
+  `
 
   const weekEntries = entries.filter(e => e.start >= monday.getTime() && e.start < nextMonday.getTime())
 
@@ -442,11 +456,11 @@ function weeklySummaryHtml() {
   const dayKeys = WEEK_ORDER.filter(d => byDay[d])
 
   if (!dayKeys.length) {
-    return `<div class="empty">
+    return weekNavHtml + `<div class="empty">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
       </svg>
-      <div class="empty-text">No entries this week.</div>
+      <div class="empty-text">No entries for this week.</div>
     </div>`
   }
 
@@ -470,7 +484,7 @@ function weeklySummaryHtml() {
   textLines.push(`total: $${n(totalRounded)}`)
 
   weeklySummaryText = textLines.join('\n')
-  return `
+  return weekNavHtml + `
     <div class="card wsum-card">
       <pre class="wsum-pre">${escHtml(weeklySummaryText)}</pre>
     </div>
@@ -560,6 +574,7 @@ function renderSummary() {
 }
 
 window.setSummaryFilter = f => { summaryFilter = f; renderSummary() }
+window.shiftByDayWeek  = d => { byDayWeekOffset = Math.min(0, byDayWeekOffset + d); renderSummary() }
 
 window.copyWeeklySummary = () => {
   navigator.clipboard.writeText(weeklySummaryText).then(() => {

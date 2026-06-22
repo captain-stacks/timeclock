@@ -375,6 +375,15 @@ input[type="datetime-local"] {
 /* Data actions */
 .data-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
+/* Week navigation */
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.week-nav-label { font-size: 14px; font-weight: 600; color: var(--text); }
+
 /* Weekly / By Day Summary */
 .wsum-card { padding: 16px; }
 .wsum-pre { font-family: 'SF Mono', 'Roboto Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.8; white-space: pre-wrap; word-break: break-word; color: var(--text); }
