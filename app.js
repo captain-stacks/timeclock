@@ -13,6 +13,15 @@ const DB = (() => {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+function currentMonday() {
+  const now = new Date()
+  const dow = now.getDay()
+  const d = new Date(now)
+  d.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1))
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
 }
@@ -283,9 +292,10 @@ function renderLog() {
 
   let entries = DB.entries().filter(e => e.end).reverse()
 
-  if (logFilter !== 'all') {
-    const days = logFilter === 'week' ? 7 : 30
-    const cutoff = Date.now() - days * 86400000
+  if (logFilter === 'week') {
+    entries = entries.filter(e => e.start >= currentMonday().getTime())
+  } else if (logFilter === 'month') {
+    const cutoff = Date.now() - 30 * 86400000
     entries = entries.filter(e => e.start >= cutoff)
   }
 
@@ -415,12 +425,8 @@ function weeklySummaryHtml() {
   const projects   = DB.projects()
   const entries    = DB.entries().filter(e => e.end)
 
-  const now        = new Date()
-  const dow        = now.getDay()
-  const daysFromMon = dow === 0 ? 6 : dow - 1
-  const monday     = new Date(now)
-  monday.setDate(now.getDate() - daysFromMon + byDayWeekOffset * 7)
-  monday.setHours(0, 0, 0, 0)
+  const monday     = currentMonday()
+  monday.setDate(monday.getDate() + byDayWeekOffset * 7)
   const nextMonday = new Date(monday)
   nextMonday.setDate(monday.getDate() + 7)
 
@@ -517,9 +523,10 @@ function renderSummary() {
 
   let entries = DB.entries().filter(e => e.end)
 
-  if (summaryFilter !== 'all') {
-    const days = summaryFilter === 'week' ? 7 : 30
-    const cutoff = Date.now() - days * 86400000
+  if (summaryFilter === 'week') {
+    entries = entries.filter(e => e.start >= currentMonday().getTime())
+  } else if (summaryFilter === 'month') {
+    const cutoff = Date.now() - 30 * 86400000
     entries = entries.filter(e => e.start >= cutoff)
   }
 
